@@ -4,6 +4,20 @@ import random
 
 from time import time
 
+import sys
+import os
+import imp
+
+dir = os.path.dirname(bpy.data.filepath)
+#dir = os.path.join(dir, os.pardir)
+print(dir)
+if not dir in sys.path:
+    sys.path.append(dir )
+
+import planemaker
+
+imp.reload(planemaker)
+
 def delete_old_stuff():
     get_me_mode('OBJECT')
     select_only(ISLAND_NAME)
@@ -19,7 +33,7 @@ def delete_old_stuff():
 
 def t():
     # Grab the "front" of the plane and pull it down with connected falloff.
-    bpy.ops.transform.translate(value=(0.0, 0.0, -1.0) , proportional='CONNECTED', proportional_edit_falloff='SMOOTH', proportional_size=2.0)
+    bpy.ops.transform.translate(value=(0.0, 0.0, -1.5) , proportional='CONNECTED', proportional_edit_falloff='SMOOTH', proportional_size=2.0)
 
 def random_spike(island_plane, num_spikes):
     for i in range(num_spikes):
@@ -30,7 +44,7 @@ def random_spike(island_plane, num_spikes):
         random.choice(island_plane.data.vertices).select = True
         
         get_me_mode('EDIT')
-        bpy.ops.transform.translate(value=(0.0, 0.0, (random.random() * 1.5)) , proportional='CONNECTED', proportional_edit_falloff='SMOOTH', proportional_size=random.random()*1.1)
+        bpy.ops.transform.translate(value=(0.0, 0.0, (random.random() * 1.9)) , proportional='CONNECTED', proportional_edit_falloff='SMOOTH', proportional_size=random.random()*1.7)
 
 def select_outer_loop(bm):
     for vertex in bm.verts:
@@ -56,17 +70,24 @@ def place_tree(bm):
     bm.verts.ensure_lookup_table()
     
     verts_above_ground = [vertex for vertex in bm.verts if vertex.co.z > 0.1]
+    
     if len(verts_above_ground) < 1:
-        verts_above_ground = bm.verts
-        
-    coordinates = random.choice(verts_above_ground).co
+        vert = bm.verts.new((random.random(), random.random(), 0.0))
+        coordinates = vert.co
+    else:
+        coordinates = random.choice(verts_above_ground).co
+    
     get_me_mode('OBJECT')
     world_coordinates = (bpy.context.active_object.matrix_world * coordinates)
     
-    bpy.ops.mesh.primitive_plane_add(radius=0.03, location=world_coordinates, enter_editmode=True)
+    trunk_thickness = (random.random() * 0.04) + 0.03
+    
+    print(trunk_thickness)
+    
+    bpy.ops.mesh.primitive_plane_add(radius=trunk_thickness, location=world_coordinates, enter_editmode=True)
     bpy.context.active_object.name = tree_name
     bpy.ops.transform.translate(value=(0.0, 0.0, -0.2))
-    bpy.ops.mesh.extrude_region_move(TRANSFORM_OT_translate={"value":(0, 0, (random.random() * 1.5) + 0.19)})
+    bpy.ops.mesh.extrude_region_move(TRANSFORM_OT_translate={"value":(0, 0, (random.random() * 0.7) + 0.7)})
     
     ob = bpy.context.active_object
     ob.update_from_editmode()
@@ -85,7 +106,7 @@ def place_tree(bm):
     bpy.context.object.modifiers["Decimate"].iterations = 1
     bpy.ops.object.modifier_apply(modifier="Decimate")
     
-    return top_of_tree
+    return top_of_tree, trunk_thickness
 
 def r():
     get_me_mode('OBJECT')
@@ -121,12 +142,15 @@ def get_me_mode(new_mode):
     except:
         pass
 
-def make_tree_top(position=(0.0, 0.0, 0.0)):
+def make_tree_top(position=(0.0, 0.0, 0.0), top_size=0.0):
+    position[1] += 0.05
     get_me_mode('OBJECT')
-    bpy.ops.mesh.primitive_ico_sphere_add(size=0.2, subdivisions=1, enter_editmode=True, location=(position))
+    bpy.ops.mesh.primitive_ico_sphere_add(size=0.3 * (1 + (top_size * 3)), subdivisions=1, enter_editmode=True, location=(position))
+    bpy.ops.transform.rotate(value=(random.random() * 6.4))
     bpy.context.active_object.name = top_name
-    bpy.ops.mesh.subdivide(fractal=9.56, fractal_along_normal=0.243)
+    bpy.ops.mesh.subdivide(fractal=9.56, fractal_along_normal=0.15)
     bpy.ops.mesh.vertices_smooth(factor=0.9)
+    bpy.ops.obj
     bpy.context.active_object.data.materials.append(bpy.data.materials.get('Green'))
 
 def create_sun(sun_name):
@@ -167,15 +191,23 @@ def create_sea(name, position):
 
 def create_island(name):
     get_me_mode('OBJECT')
-    bpy.ops.mesh.primitive_plane_add(location=(0.0, 0.0, 0.0), enter_editmode=True)
-    bpy.context.active_object.name = name
-    bpy.ops.transform.resize(value=(2.0, 2.0, 2.0))
-    bpy.ops.mesh.subdivide(number_cuts=10)
-    bpy.ops.mesh.subdivide(number_cuts=2)
+    #bpy.ops.mesh.primitive_plane_add(location=(0.0, 0.0, 0.0), enter_editmode=True)
+    #bpy.context.active_object.name = name
+    
+    plane = planemaker.generate_plane(name, True)
+    select_only(name)
+    plane.location.z
+    
+    get_me_mode('EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.transform.resize(value=(0.2, 0.2, 0.2))
+    #bpy.ops.transform.translate(value=(0.0, 0.0, 0.1))
+    #bpy.ops.mesh.subdivide(number_cuts=10)
+    #bpy.ops.mesh.subdivide(number_cuts=2)
     
     select_only(name)
     
-    plane = bpy.context.active_object
+    #plane = bpy.context.active_object
     
     random_spike(plane, 8)
     
@@ -199,12 +231,12 @@ def create_island(name):
     
     # Squash the island down a little bit.
     get_me_mode('OBJECT')
-    bpy.ops.transform.resize(value=(1.0, 1.0, 0.75))
+    #bpy.ops.transform.resize(value=(1.0, 1.0, 0.75))
     
     # Clean up unneded vertices.
     get_me_mode('EDIT')
     bm = bmesh.from_edit_mesh(bpy.context.object.data)
-    delete_faces_under(bm)
+    #delete_faces_under(bm)
     
     # Move the island to a spot.
     plane.location = (random.random() * 5.0, 0.0, 0.0)
@@ -229,19 +261,30 @@ print(island_plane.name)
 activate_object(island_plane)
 print(bpy.context.active_object)
 get_me_mode('EDIT')
-treetop_position = place_tree(bmesh.from_edit_mesh(bpy.context.active_object.data))
-make_tree_top(treetop_position)
+treetop_position, treetop_size = place_tree(bmesh.from_edit_mesh(bpy.context.active_object.data))
+make_tree_top(treetop_position, treetop_size)
 
 get_me_mode('OBJECT')
 bpy.ops.object.select_all(action='DESELECT')
 
 
 # RENDERING PARAMETERS
+def set_scene_options():
+    # Make the sky point at the sun.
+    bpy.data.worlds['World'].node_tree.nodes['Sky Texture'].sun_direction = bpy.data.objects['Sun34587873456'].rotation_euler
+    
+    # Random amount of haziness.
+    bpy.data.worlds['World'].node_tree.nodes['Sky Texture'].turbidity = (random.random() * 9.0) + 1.0
+    
+    # Random reflected ground color.
+    bpy.data.worlds['World'].node_tree.nodes['Sky Texture'].ground_albedo = random.random()
+    
 def set_render_options():
     bpy.context.scene.render.engine = 'CYCLES'
     bpy.context.scene.cycles.sampling_pattern = 'SOBOL'
     bpy.context.scene.cycles.film_exposure = 1.9
-    bpy.context.scene.cycles.samples = 2
+    bpy.context.scene.cycles.samples = 4
+    bpy.context.scene.render.threads_mode = 'FIXED'
     bpy.context.scene.render.threads = 1
     bpy.context.scene.render.filepath = '//../automation/cycles/' + str(time()) + ".png"
     bpy.context.scene.render.use_overwrite = False
@@ -249,5 +292,6 @@ def set_render_options():
     print(bpy.context.scene.render.filepath)
 
 # RENDER
+set_scene_options()
 set_render_options()
 #bpy.ops.render.render()

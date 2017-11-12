@@ -26,9 +26,6 @@ import render_image
 # If this is False, skip the API call that sends the tweet.
 run_live = True
 
-# Verbose.
-v = False
-
 auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 auth.set_access_token(ACCESS_KEY, ACCESS_SECRET)
 api = tweepy.API(auth)
@@ -57,11 +54,13 @@ while True:
                 picture_handler.cleanup_image(image_path)
 
             tweeted = True
-                
+        
+        # Oh gosh, I am not a smart man. How do I into exceptions?
         except ConnectionAbortedError as e:
             print(e)
             print(e, file=open("error_log.txt", "a+"))
-                
+
+        # We could feed a family of six with all this spaghetti.
         except tweepy.error.TweepError as e:
             print(e.api_code)
 
@@ -74,24 +73,23 @@ while True:
             else:
                 print("\r\n" + time.strftime("%H:%M:%S"),
                         file=open("error_log.txt", "a+"))
-                if v: traceback.print_exc(file=sys.stdout)
-                else: print(e)
+                traceback.print_exc(file=sys.stdout)
                 traceback.print_exc(file=open("error_log.txt", "a+"))
 
                 tweeted = False
-                print(time.strftime("%H:%M:%S") + "\nRetry in 5 minutes...")
+                logger.warning("Trying again in 5 minutes...")
                 time.sleep(300)
 
-    # Pick a sort of random time to wait
-    sleepytime = random.randint(17000, 19000)
-    
-    # Print stuff
+    # Pick a sort of random time to wait.
+    sleepytime = random.randint(17000, 19000) # 18000 seconds = 5 hours.
+
     logger.info("Sleeping for " + str(int(sleepytime / 60)) + " minutes...")
 
     total_tweet_time += (sleepytime / 60)
     number_of_tweets += 1
-    
-    logger.info("Average tweet time: " + str(int(total_tweet_time / number_of_tweets)) + " minutes.")
+    average_tweet_time = int(total_tweet_time / number_of_tweets)
+
+    logger.info("Average tweet time: {} minutes.".format(average_tweet_time)
     
     # Wait for the sort of random amount of time
     time.sleep(sleepytime)
