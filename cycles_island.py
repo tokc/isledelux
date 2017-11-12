@@ -10,13 +10,71 @@ import imp
 
 dir = os.path.dirname(bpy.data.filepath)
 #dir = os.path.join(dir, os.pardir)
-print(dir)
 if not dir in sys.path:
-    sys.path.append(dir )
+    sys.path.append(dir)
 
 import planemaker
-
 imp.reload(planemaker)
+
+
+# Parameter stuff.
+reset_old_stuff = True
+
+UNIQUE_ID = "34587873456"
+ISLAND_NAME = "Island" + UNIQUE_ID
+tree_name = "Tree" + UNIQUE_ID
+top_name = "Top" + UNIQUE_ID
+SUN_NAME = "Sun" + UNIQUE_ID
+SEA_NAME = "Sea" + UNIQUE_ID
+
+
+# Utility stuff.
+
+def select_only(thing):
+    # Deselect everything and select only the named object.
+    get_me_mode('OBJECT')
+    bpy.ops.object.select_all(action='DESELECT')
+    try:
+        bpy.data.objects[thing].select = True
+    except:
+        pass
+
+def activate_object(object):
+    # Deselect everything and select only the named object.
+    get_me_mode('OBJECT')
+    bpy.ops.object.select_all(action='DESELECT')
+    try:
+        bpy.context.scene.objects.active = object
+    except:
+        pass
+
+def get_me_mode(new_mode):
+    try:
+        bpy.ops.object.mode_set(mode=new_mode)
+
+    except:
+        pass
+
+
+# Linear stuff.
+
+def generate_tree(island):
+    # Make a tree.
+    activate_object(island)
+    get_me_mode('EDIT')
+    bm = bmesh.from_edit_mesh(bpy.context.active_object.data)
+    treetop_position, treetop_size = place_tree(bm)
+    make_tree_top(treetop_position, treetop_size)
+
+def generate_scene():
+    # Create a sun.
+    create_sun(SUN_NAME)
+
+    # Create an island.
+    island_plane = create_island(ISLAND_NAME)
+
+    generate_tree(island_plane)
+    if random.random() > 0.5: generate_tree(island_plane)
 
 def delete_old_stuff():
     get_me_mode('OBJECT')
@@ -30,21 +88,24 @@ def delete_old_stuff():
     bpy.ops.object.delete()
     select_only(SEA_NAME)
     bpy.ops.object.delete()
+    
+    select_only(tree_name + ".001")
+    bpy.ops.object.delete()
+    select_only(top_name + ".001")
+    bpy.ops.object.delete()
 
 def t():
     # Grab the "front" of the plane and pull it down with connected falloff.
     bpy.ops.transform.translate(value=(0.0, 0.0, -1.5) , proportional='CONNECTED', proportional_edit_falloff='SMOOTH', proportional_size=2.0)
 
-def random_spike(island_plane, num_spikes):
-    for i in range(num_spikes):
-        get_me_mode('EDIT')
-        bpy.ops.mesh.select_all(action='DESELECT')
-        
-        get_me_mode('OBJECT')
-        random.choice(island_plane.data.vertices).select = True
-        
-        get_me_mode('EDIT')
-        bpy.ops.transform.translate(value=(0.0, 0.0, (random.random() * 1.9)) , proportional='CONNECTED', proportional_edit_falloff='SMOOTH', proportional_size=random.random()*1.7)
+def r():
+    get_me_mode('OBJECT')
+    bpy.ops.transform.rotate(
+        value=(random.random() * 6.2),
+        axis=(0, 0, 1),
+        constraint_axis=(False, False, True),
+        constraint_orientation='GLOBAL'
+        )
 
 def select_outer_loop(bm):
     for vertex in bm.verts:
@@ -65,6 +126,80 @@ def delete_faces_under(bm, under=0.0):
             face.select = True
 
     bpy.ops.mesh.delete(type='FACE')
+
+
+# Generate stuff.
+
+def random_spike(island_plane, num_spikes):
+    for i in range(num_spikes):
+        get_me_mode('EDIT')
+        bpy.ops.mesh.select_all(action='DESELECT')
+        
+        get_me_mode('OBJECT')
+        random.choice(island_plane.data.vertices).select = True
+        
+        get_me_mode('EDIT')
+        bpy.ops.transform.translate(value=(0.0, 0.0, (random.random() * 1.9)) , proportional='CONNECTED', proportional_edit_falloff='SMOOTH', proportional_size=(random.random() * 1) + 0.7)
+
+def create_sea(name, position):
+    get_me_mode('OBJECT')
+    bpy.ops.mesh.primitive_plane_add(radius=2.0, location=position, enter_editmode=True)
+    bpy.context.active_object.name = name
+    bpy.ops.transform.resize(value=(2.0, 2.0, 2.0))
+    
+    # Apply island material.
+    select_only(name)
+    sea = bpy.context.active_object
+    sea.data.materials.append(bpy.data.materials.get('Blue'))
+
+def create_island(name):
+    get_me_mode('OBJECT')
+    
+    plane = planemaker.generate_plane(name, True)
+    select_only(name)
+    plane.location.z
+    
+    get_me_mode('EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.transform.resize(value=(0.2, 0.2, 0.2))
+    
+    select_only(name)
+    
+    random_spike(plane, 8)
+    
+    # Select edge loop.
+    get_me_mode('EDIT')
+    bpy.ops.mesh.select_all(action='DESELECT')
+    bm = bmesh.from_edit_mesh(bpy.context.object.data)
+    select_outer_loop(bm)
+    
+    # Pull down edge of island plane.
+    t()
+    
+    # Rotate island object.
+    r()
+    
+    # Smooth
+    get_me_mode('EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.mesh.vertices_smooth(factor=0.9)
+    bpy.ops.mesh.vertices_smooth(factor=0.9)
+    
+    # Clean up unneded vertices.
+    get_me_mode('EDIT')
+    bm = bmesh.from_edit_mesh(bpy.context.object.data)
+    delete_faces_under(bm)
+    
+    # Move the island to a spot.
+    plane.location = ((random.random() * 5.0) - 1.0, 0.0, 0.0)
+    
+    # Apply island material.
+    plane.data.materials.append(bpy.data.materials.get('Sand'))
+    
+    #sea_location = [plane.location.x, plane.location.y, 0.1]
+    #create_sea(SEA_NAME, sea_location)
+
+    return plane
 
 def place_tree(bm):
     bm.verts.ensure_lookup_table()
@@ -108,40 +243,6 @@ def place_tree(bm):
     
     return top_of_tree, trunk_thickness
 
-def r():
-    get_me_mode('OBJECT')
-    bpy.ops.transform.rotate(
-        value=(random.random() * 6.2),
-        axis=(0, 0, 1),
-        constraint_axis=(False, False, True),
-        constraint_orientation='GLOBAL'
-        )
-
-def select_only(thing):
-    # Deselect everything and select only the named object.
-    get_me_mode('OBJECT')
-    bpy.ops.object.select_all(action='DESELECT')
-    try:
-        bpy.data.objects[thing].select = True
-    except:
-        pass
-
-def activate_object(object):
-    # Deselect everything and select only the named object.
-    get_me_mode('OBJECT')
-    bpy.ops.object.select_all(action='DESELECT')
-    try:
-        bpy.context.scene.objects.active = object
-    except:
-        pass
-
-def get_me_mode(new_mode):
-    try:
-        bpy.ops.object.mode_set(mode=new_mode)
-
-    except:
-        pass
-
 def make_tree_top(position=(0.0, 0.0, 0.0), top_size=0.0):
     position[1] += 0.05
     get_me_mode('OBJECT')
@@ -158,114 +259,23 @@ def create_sun(sun_name):
     bpy.ops.object.lamp_add(type='SUN', location=(3.0, 7.0, 2.0))
     sun = bpy.context.active_object
     sun.name = sun_name
-    #sun = bpy.data.objects['Sun']
     sun.rotation_euler = (random.random() * 1.4, 0.0, random.random() * 6.3)    
 
-print("Henlo.")
 
-reset_old_stuff = True
-
-UNIQUE_ID = "34587873456"
-ISLAND_NAME = "Island" + UNIQUE_ID
-tree_name = "Tree" + UNIQUE_ID
-top_name = "Top" + UNIQUE_ID
-SUN_NAME = "Sun" + UNIQUE_ID
-SEA_NAME = "Sea" + UNIQUE_ID
-
+# Do stuff.
 if reset_old_stuff:
     delete_old_stuff()
 
-# Create a sun.
-create_sun(SUN_NAME)
+generate_scene()
 
-def create_sea(name, position):
-    get_me_mode('OBJECT')
-    bpy.ops.mesh.primitive_plane_add(radius=2.0, location=position, enter_editmode=True)
-    bpy.context.active_object.name = name
-    bpy.ops.transform.resize(value=(2.0, 2.0, 2.0))
-    
-    select_only(name)
-    sea = bpy.context.active_object
-    # Apply island material.
-    sea.data.materials.append(bpy.data.materials.get('Blue'))
-
-def create_island(name):
-    get_me_mode('OBJECT')
-    #bpy.ops.mesh.primitive_plane_add(location=(0.0, 0.0, 0.0), enter_editmode=True)
-    #bpy.context.active_object.name = name
-    
-    plane = planemaker.generate_plane(name, True)
-    select_only(name)
-    plane.location.z
-    
-    get_me_mode('EDIT')
-    bpy.ops.mesh.select_all(action='SELECT')
-    bpy.ops.transform.resize(value=(0.2, 0.2, 0.2))
-    #bpy.ops.transform.translate(value=(0.0, 0.0, 0.1))
-    #bpy.ops.mesh.subdivide(number_cuts=10)
-    #bpy.ops.mesh.subdivide(number_cuts=2)
-    
-    select_only(name)
-    
-    #plane = bpy.context.active_object
-    
-    random_spike(plane, 8)
-    
-    # Select edge loop.
-    get_me_mode('EDIT')
-    bpy.ops.mesh.select_all(action='DESELECT')
-    bm = bmesh.from_edit_mesh(bpy.context.object.data)
-    select_outer_loop(bm)
-    
-    # Pull down edge of island plane.
-    t()
-    
-    # Rotate island object.
-    r()
-    
-    # Smooth
-    get_me_mode('EDIT')
-    bpy.ops.mesh.select_all(action='SELECT')
-    bpy.ops.mesh.vertices_smooth(factor=0.9)
-    bpy.ops.mesh.vertices_smooth(factor=0.9)
-    
-    # Squash the island down a little bit.
-    get_me_mode('OBJECT')
-    #bpy.ops.transform.resize(value=(1.0, 1.0, 0.75))
-    
-    # Clean up unneded vertices.
-    get_me_mode('EDIT')
-    bm = bmesh.from_edit_mesh(bpy.context.object.data)
-    #delete_faces_under(bm)
-    
-    # Move the island to a spot.
-    plane.location = (random.random() * 5.0, 0.0, 0.0)
-    
-    # Apply island material.
-    plane.data.materials.append(bpy.data.materials.get('Sand'))
-    
-    sea_location = [plane.location.x, plane.location.y, 0.1]
-    #create_sea(SEA_NAME, sea_location)
-
-    return plane
-    
-# Create an island.
-island_plane = create_island(ISLAND_NAME)
+# This is just to make the view pretty while working visually.
+get_me_mode('OBJECT')
+bpy.ops.object.select_all(action='DESELECT')
 
 # CAMERA STUFF
 target = bpy.data.objects['Empty2']
 #                       Y between -3.0 and 3.0         Z between 1.0 and 2.0
 target.location = (0.0, (random.random() - 0.5) * 6.0, 0.5 + random.random() * 2.0)
-
-print(island_plane.name)
-activate_object(island_plane)
-print(bpy.context.active_object)
-get_me_mode('EDIT')
-treetop_position, treetop_size = place_tree(bmesh.from_edit_mesh(bpy.context.active_object.data))
-make_tree_top(treetop_position, treetop_size)
-
-get_me_mode('OBJECT')
-bpy.ops.object.select_all(action='DESELECT')
 
 
 # RENDERING PARAMETERS
