@@ -8,10 +8,9 @@ import sys
 import os
 import imp
 
-dir = os.path.dirname(bpy.data.filepath)
-#dir = os.path.join(dir, os.pardir)
-if not dir in sys.path:
-    sys.path.append(dir)
+directory = os.path.dirname(bpy.data.filepath)
+if not directory in sys.path:
+    sys.path.append(directory)
 
 import planemaker
 imp.reload(planemaker)
@@ -58,6 +57,34 @@ def get_me_mode(new_mode):
 
 # Linear stuff.
 
+def generate_scene():
+    create_sun(SUN_NAME)
+    create_sea()
+    
+    set_up_camera()
+    
+    island_plane = create_island(ISLAND_NAME)
+    lots_of_trees(island_plane)
+
+def lots_of_trees(island):
+    more = True
+
+    while more:
+        generate_tree(island)
+
+        if random.random() > 0.5:
+            more = False
+
+def set_up_camera():
+    # CAMERA STUFF
+    get_me_mode('OBJECT')
+    bpy.ops.object.empty_add()
+    target = bpy.context.active_object
+    #                       Y between -3.0 and 3.0         Z between 1.0 and 2.0
+    target.location = (0.0, (random.random() - 0.5) * 6.0, 0.5 + random.random() * 2.0)
+
+    create_camera(target)
+
 def generate_tree(island):
     # Make a tree.
     activate_object(island)
@@ -66,34 +93,11 @@ def generate_tree(island):
     treetop_position, treetop_size = place_tree(bm)
     make_tree_top(treetop_position, treetop_size)
 
-def generate_scene():
-    # Create a sun.
-    create_sun(SUN_NAME)
-
-    # Create an island.
-    island_plane = create_island(ISLAND_NAME)
-
-    generate_tree(island_plane)
-    if random.random() > 0.5: generate_tree(island_plane)
-
 def delete_old_stuff():
     get_me_mode('OBJECT')
-    select_only(ISLAND_NAME)
-    bpy.ops.object.delete()
-    select_only(tree_name)
-    bpy.ops.object.delete()
-    select_only(top_name)
-    bpy.ops.object.delete()
-    select_only(SUN_NAME)
-    bpy.ops.object.delete()
-    select_only(SEA_NAME)
+    bpy.ops.object.select_all(action='SELECT')
     bpy.ops.object.delete()
     
-    select_only(tree_name + ".001")
-    bpy.ops.object.delete()
-    select_only(top_name + ".001")
-    bpy.ops.object.delete()
-
 def t():
     # Grab the "front" of the plane and pull it down with connected falloff.
     bpy.ops.transform.translate(value=(0.0, 0.0, -1.5) , proportional='CONNECTED', proportional_edit_falloff='SMOOTH', proportional_size=2.0)
@@ -130,6 +134,19 @@ def delete_faces_under(bm, under=0.0):
 
 # Generate stuff.
 
+def create_camera(target):
+    get_me_mode('OBJECT')
+    bpy.ops.object.camera_add(location=(13.0, 0.0, 0.2))
+    camera = bpy.context.active_object
+    
+    # Set the new camera as the active rendering camera.
+    bpy.context.scene.camera = camera
+    
+    track = camera.constraints.new(type='TRACK_TO')
+    track.target = target
+    track.track_axis = 'TRACK_NEGATIVE_Z'
+    track.up_axis = 'UP_Y'
+
 def random_spike(island_plane, num_spikes):
     for i in range(num_spikes):
         get_me_mode('EDIT')
@@ -141,14 +158,12 @@ def random_spike(island_plane, num_spikes):
         get_me_mode('EDIT')
         bpy.ops.transform.translate(value=(0.0, 0.0, (random.random() * 1.9)) , proportional='CONNECTED', proportional_edit_falloff='SMOOTH', proportional_size=(random.random() * 1) + 0.7)
 
-def create_sea(name, position):
+def create_sea():
     get_me_mode('OBJECT')
-    bpy.ops.mesh.primitive_plane_add(radius=2.0, location=position, enter_editmode=True)
-    bpy.context.active_object.name = name
-    bpy.ops.transform.resize(value=(2.0, 2.0, 2.0))
+    bpy.ops.mesh.primitive_plane_add(radius=200.0, location=(0.0, 0.0, 0.15), enter_editmode=False)
+    #bpy.ops.transform.resize(value=(2.0, 2.0, 2.0))
     
     # Apply island material.
-    select_only(name)
     sea = bpy.context.active_object
     sea.data.materials.append(bpy.data.materials.get('Blue'))
 
@@ -196,9 +211,6 @@ def create_island(name):
     # Apply island material.
     plane.data.materials.append(bpy.data.materials.get('Sand'))
     
-    #sea_location = [plane.location.x, plane.location.y, 0.1]
-    #create_sea(SEA_NAME, sea_location)
-
     return plane
 
 def place_tree(bm):
@@ -216,8 +228,6 @@ def place_tree(bm):
     world_coordinates = (bpy.context.active_object.matrix_world * coordinates)
     
     trunk_thickness = (random.random() * 0.04) + 0.03
-    
-    print(trunk_thickness)
     
     bpy.ops.mesh.primitive_plane_add(radius=trunk_thickness, location=world_coordinates, enter_editmode=True)
     bpy.context.active_object.name = tree_name
@@ -268,15 +278,7 @@ if reset_old_stuff:
 
 generate_scene()
 
-# This is just to make the view pretty while working visually.
 get_me_mode('OBJECT')
-bpy.ops.object.select_all(action='DESELECT')
-
-# CAMERA STUFF
-target = bpy.data.objects['Empty2']
-#                       Y between -3.0 and 3.0         Z between 1.0 and 2.0
-target.location = (0.0, (random.random() - 0.5) * 6.0, 0.5 + random.random() * 2.0)
-
 
 # RENDERING PARAMETERS
 def set_scene_options():
@@ -299,8 +301,6 @@ def set_render_options():
     bpy.context.scene.render.filepath = '//../automation/cycles/' + str(time()) + ".png"
     bpy.context.scene.render.use_overwrite = False
     
-    print(bpy.context.scene.render.filepath)
-
 # RENDER
 set_scene_options()
 set_render_options()
