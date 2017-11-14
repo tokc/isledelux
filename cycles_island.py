@@ -138,7 +138,6 @@ def create_camera(target):
     get_me_mode('OBJECT')
     bpy.ops.object.camera_add(location=(13.0, 0.0, 0.2))
     camera = bpy.context.active_object
-    
     # Set the new camera as the active rendering camera.
     bpy.context.scene.camera = camera
     
@@ -156,7 +155,8 @@ def random_spike(island_plane, num_spikes):
         random.choice(island_plane.data.vertices).select = True
         
         get_me_mode('EDIT')
-        bpy.ops.transform.translate(value=(0.0, 0.0, (random.random() * 1.9)) , proportional='CONNECTED', proportional_edit_falloff='SMOOTH', proportional_size=(random.random() * 1) + 0.7)
+        spike_height = (random.random() * 1)
+        bpy.ops.transform.translate(value=(0.0, 0.0, spike_height) , proportional='CONNECTED', proportional_edit_falloff='SMOOTH', proportional_size=(random.random() * 1) + spike_height)
 
 def create_sea():
     get_me_mode('OBJECT')
@@ -204,53 +204,68 @@ def create_island(name):
     get_me_mode('EDIT')
     bm = bmesh.from_edit_mesh(bpy.context.object.data)
     delete_faces_under(bm)
-    
+
     # Move the island to a spot.
     plane.location = ((random.random() * 5.0) - 1.0, 0.0, 0.0)
-    
+
     # Apply island material.
     plane.data.materials.append(bpy.data.materials.get('Sand'))
-    
+
     return plane
 
 def place_tree(bm):
     bm.verts.ensure_lookup_table()
-    
-    verts_above_ground = [vertex for vertex in bm.verts if vertex.co.z > 0.1]
-    
+    verts_above_ground = [vertex for vertex in bm.verts if vertex.co.z > 0.149]
+
     if len(verts_above_ground) < 1:
+        # If there are no vertices above ground height, make a new one.
         vert = bm.verts.new((random.random(), random.random(), 0.0))
         coordinates = vert.co
     else:
         coordinates = random.choice(verts_above_ground).co
-    
-    get_me_mode('OBJECT')
+        
+        # I have no idea why some of these trunks are ending up at 0, 0.
+        # Aaaaah~
+        # But...
+        # It works now?
+        # So, I'm just going to leave it like this.
+        wc = (bpy.context.active_object.matrix_world * coordinates)
+        print(wc)
+        while (int(wc.x * 10) == 0 or int(wc.y * 10) == 0):
+            print("ABOVE HERE")
+            coordinates = random.choice(verts_above_ground).co
+            wc = (bpy.context.active_object.matrix_world * coordinates)
+
     world_coordinates = (bpy.context.active_object.matrix_world * coordinates)
     
+    get_me_mode('OBJECT')
     trunk_thickness = (random.random() * 0.04) + 0.03
-    
-    bpy.ops.mesh.primitive_plane_add(radius=trunk_thickness, location=world_coordinates, enter_editmode=True)
-    bpy.context.active_object.name = tree_name
+    bpy.ops.mesh.primitive_plane_add(
+        radius=trunk_thickness,
+        location=world_coordinates,
+        enter_editmode=True)
+
+    # Extrude the trunk.
     bpy.ops.transform.translate(value=(0.0, 0.0, -0.2))
     bpy.ops.mesh.extrude_region_move(TRANSFORM_OT_translate={"value":(0, 0, (random.random() * 0.7) + 0.7)})
-    
+
     ob = bpy.context.active_object
     ob.update_from_editmode()
-    
-    bpy.context.active_object.data.materials.append(bpy.data.materials.get('Brown'))
-    
+
     top_of_tree = ob.matrix_world * [v.co for v in ob.data.vertices if v.select][0]
-    
+
     get_me_mode('EDIT')
     bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.mesh.subdivide(fractal=0.67)
-    
+
     get_me_mode('OBJECT')
     bpy.ops.object.modifier_add(type='DECIMATE')
     bpy.context.object.modifiers["Decimate"].decimate_type = 'UNSUBDIV'
     bpy.context.object.modifiers["Decimate"].iterations = 1
     bpy.ops.object.modifier_apply(modifier="Decimate")
-    
+
+    bpy.context.active_object.data.materials.append(bpy.data.materials.get('Brown'))
+
     return top_of_tree, trunk_thickness
 
 def make_tree_top(position=(0.0, 0.0, 0.0), top_size=0.0):
@@ -280,6 +295,9 @@ generate_scene()
 
 get_me_mode('OBJECT')
 
+# This is the stupidest thing I have ever seen. But apparently it's the easiest way to change the view to the camera.
+#next(area for area in bpy.context.screen.areas if area.type == 'VIEW_3D').spaces[0].region_3d.view_perspective = 'CAMERA'
+
 # RENDERING PARAMETERS
 def set_scene_options():
     # Make the sky point at the sun.
@@ -298,10 +316,10 @@ def set_render_options():
     bpy.context.scene.cycles.samples = 4
     bpy.context.scene.render.threads_mode = 'FIXED'
     bpy.context.scene.render.threads = 1
-    bpy.context.scene.render.filepath = '//../automation/cycles/' + str(time()) + ".png"
+    bpy.context.scene.render.filepath = '//cycles/' + str(time()) + ".png"
     bpy.context.scene.render.use_overwrite = False
     
-# RENDER
+# REMOVE THIS STUFF TO USE ME IN BLENDER
 set_scene_options()
 set_render_options()
 #bpy.ops.render.render()
