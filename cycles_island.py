@@ -7,7 +7,7 @@ from time import time
 import sys
 import os
 
-SCRIPT_DIRECTORY = "C:/Users/eviloatmeal/Files/3D/islands/bpy_scripts"
+SCRIPT_DIRECTORY = "."
 
 directory = SCRIPT_DIRECTORY
 if not directory in sys.path:
