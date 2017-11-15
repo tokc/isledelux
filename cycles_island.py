@@ -6,14 +6,13 @@ from time import time
 
 import sys
 import os
-import imp
 
-directory = os.path.dirname(bpy.data.filepath)
+SCRIPT_DIRECTORY = "C:/Users/eviloatmeal/Files/3D/islands/bpy_scripts"
+
+directory = SCRIPT_DIRECTORY
 if not directory in sys.path:
     sys.path.append(directory)
-
 import planemaker
-imp.reload(planemaker)
 
 
 # Parameter stuff.
@@ -302,7 +301,8 @@ generate_scene()
 get_me_mode('OBJECT')
 
 # This is the stupidest thing I have ever seen. But apparently it's the easiest way to change the view to the camera.
-#next(area for area in bpy.context.screen.areas if area.type == 'VIEW_3D').spaces[0].region_3d.view_perspective = 'CAMERA'
+next(area for area in bpy.context.screen.areas if area.type == 'VIEW_3D').spaces[0].region_3d.view_perspective = 'CAMERA'
+bpy.ops.object.select_all(action='DESELECT')
 
 # RENDERING PARAMETERS
 def set_scene_options():
@@ -328,4 +328,3 @@ def set_render_options():
 # REMOVE THIS STUFF TO USE ME IN BLENDER
 set_scene_options()
 set_render_options()
-#bpy.ops.render.render()
