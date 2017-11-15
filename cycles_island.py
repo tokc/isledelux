@@ -214,6 +214,7 @@ def create_island(name):
     return plane
 
 def place_tree(bm):
+    # Choose location.
     bm.verts.ensure_lookup_table()
     verts_above_ground = [vertex for vertex in bm.verts if vertex.co.z > 0.149]
 
@@ -254,8 +255,10 @@ def place_tree(bm):
     ob = bpy.context.active_object
     ob.update_from_editmode()
 
+    # Save location of top of trunk.
     top_of_tree = ob.matrix_world * [v.co for v in ob.data.vertices if v.select][0]
 
+    # Crease the trunk.
     get_me_mode('EDIT')
     bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.mesh.subdivide(fractal=0.67)
@@ -266,6 +269,7 @@ def place_tree(bm):
     bpy.context.object.modifiers["Decimate"].iterations = 1
     bpy.ops.object.modifier_apply(modifier="Decimate")
 
+    # Add material.
     bpy.context.active_object.data.materials.append(bpy.data.materials.get('Brown'))
 
     return top_of_tree, trunk_thickness
