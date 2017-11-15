@@ -7,7 +7,7 @@ from time import time
 import sys
 import os
 
-SCRIPT_DIRECTORY = "."
+SCRIPT_DIRECTORY = "C:/Users/eviloatmeal/Files/3D/islands/bpy_scripts"
 
 directory = SCRIPT_DIRECTORY
 if not directory in sys.path:
@@ -253,6 +253,10 @@ def place_tree(bm):
 
     ob = bpy.context.active_object
     ob.update_from_editmode()
+    
+    # Rotate the trunk.
+    get_me_mode('OBJECT')
+    bpy.ops.transform.rotate(value=(random.random() * 0.4) -0.2, axis=(random.random(), random.random(), random.random()))
 
     # Save location of top of trunk.
     top_of_tree = ob.matrix_world * [v.co for v in ob.data.vertices if v.select][0]
