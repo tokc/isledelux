@@ -238,8 +238,8 @@ def place_tree(bm):
             wc = (bpy.context.active_object.matrix_world * coordinates)
 
     world_coordinates = (bpy.context.active_object.matrix_world * coordinates)
-    world_coordinates.x = (random.random() * 0.2) - 0.1
-    world_coordinates.y = (random.random() * 0.2) - 0.1
+    world_coordinates.x += (random.random() * 0.2) - 0.1
+    world_coordinates.y += (random.random() * 0.2) - 0.1
     
     get_me_mode('OBJECT')
     trunk_thickness = (random.random() * 0.04) + 0.03
