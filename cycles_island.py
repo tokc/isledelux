@@ -249,8 +249,9 @@ def place_tree(bm):
         enter_editmode=True)
 
     # Extrude the trunk.
-    bpy.ops.transform.translate(value=(0.0, 0.0, -0.2))
-    bpy.ops.mesh.extrude_region_move(TRANSFORM_OT_translate={"value":(0, 0, (random.random() * 0.7) + 0.7)})
+    underground_distance = 0.7
+    bpy.ops.transform.translate(value=(0.0, 0.0, -underground_distance))
+    bpy.ops.mesh.extrude_region_move(TRANSFORM_OT_translate={"value":(0, 0, (random.random() * 0.7) + 0.5 + underground_distance)})
 
     ob = bpy.context.active_object
     ob.update_from_editmode()
@@ -266,11 +267,12 @@ def place_tree(bm):
     get_me_mode('EDIT')
     bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.mesh.subdivide(fractal=0.67)
+    bpy.ops.mesh.subdivide(fractal=0.67)
 
     get_me_mode('OBJECT')
     bpy.ops.object.modifier_add(type='DECIMATE')
     bpy.context.object.modifiers["Decimate"].decimate_type = 'UNSUBDIV'
-    bpy.context.object.modifiers["Decimate"].iterations = 1
+    bpy.context.object.modifiers["Decimate"].iterations = 2
     bpy.ops.object.modifier_apply(modifier="Decimate")
 
     # Add material.
@@ -281,7 +283,7 @@ def place_tree(bm):
 def make_tree_top(position=(0.0, 0.0, 0.0), top_size=0.0):
     position[1] += 0.05
     get_me_mode('OBJECT')
-    bpy.ops.mesh.primitive_ico_sphere_add(size=0.3 * (1 + (top_size * 3)), subdivisions=1, enter_editmode=True, location=(position))
+    bpy.ops.mesh.primitive_ico_sphere_add(size=0.3 * (1 + (top_size * 9)), subdivisions=1, enter_editmode=True, location=(position))
     bpy.ops.transform.rotate(value=(random.random() * 6.4))
     bpy.context.active_object.name = top_name
     bpy.ops.mesh.subdivide(fractal=9.56, fractal_along_normal=0.15)
@@ -294,7 +296,7 @@ def create_sun(sun_name):
     bpy.ops.object.lamp_add(type='SUN', location=(3.0, 7.0, 2.0))
     sun = bpy.context.active_object
     sun.name = sun_name
-    sun.rotation_euler = (random.random() * 1.4, 0.0, random.random() * 6.3)    
+    sun.rotation_euler = (random.random() * 1.4, 0.0, random.random() * 6.3)
 
 
 # Do stuff.
