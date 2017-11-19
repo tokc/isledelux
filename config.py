@@ -7,3 +7,7 @@ ACCESS_SECRET = ''#keep the quotes, replace this with your access token secret
 
 # Path to Blender on your compuper.
 BLENDER_PATH = ""
+
+# How long to spend rendering images.
+# More samples means a longer render and less noise.
+RENDER_SAMPLES = 11

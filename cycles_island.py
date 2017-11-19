@@ -13,6 +13,7 @@ directory = SCRIPT_DIRECTORY
 if not directory in sys.path:
     sys.path.append(directory)
 import planemaker
+from config import *
 
 
 # Parameter stuff.
@@ -135,7 +136,7 @@ def delete_faces_under(bm, under=0.0):
 
 def create_camera(target):
     get_me_mode('OBJECT')
-    bpy.ops.object.camera_add(location=(13.0, 0.0, 0.2))
+    bpy.ops.object.camera_add(location=(13.0, 0.0, (random.random() * 0.2) + 0.2))
     camera = bpy.context.active_object
     # Set the new camera as the active rendering camera.
     bpy.context.scene.camera = camera
@@ -309,7 +310,7 @@ next(area for area in bpy.context.screen.areas if area.type == 'VIEW_3D').spaces
 bpy.ops.object.select_all(action='DESELECT')
 
 # RENDERING PARAMETERS
-def set_scene_options():
+def set_render_options():
     # Make the sky point at the sun.
     bpy.data.worlds['World'].node_tree.nodes['Sky Texture'].sun_direction = bpy.data.objects['Sun34587873456'].rotation_euler
     
@@ -319,16 +320,15 @@ def set_scene_options():
     # Random reflected ground color.
     bpy.data.worlds['World'].node_tree.nodes['Sky Texture'].ground_albedo = random.random()
     
-def set_render_options():
+    # Cycles options
     bpy.context.scene.render.engine = 'CYCLES'
     bpy.context.scene.cycles.sampling_pattern = 'SOBOL'
     bpy.context.scene.cycles.film_exposure = 1.9
-    bpy.context.scene.cycles.samples = 4
+    bpy.context.scene.cycles.samples = RENDER_SAMPLES
     bpy.context.scene.render.threads_mode = 'FIXED'
     bpy.context.scene.render.threads = 1
     bpy.context.scene.render.filepath = '//cycles/' + str(time()) + ".png"
     bpy.context.scene.render.use_overwrite = False
     
 # REMOVE THIS STUFF TO USE ME IN BLENDER
-set_scene_options()
 set_render_options()
