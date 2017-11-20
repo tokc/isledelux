@@ -36,5 +36,6 @@ def set_render_options():
     bpy.context.scene.render.filepath = '//cycles/' + str(time()) + ".png"
     bpy.context.scene.render.use_overwrite = False
 
-# REMOVE THIS STUFF TO USE ME IN BLENDER
+cycles_island.generate_scene()    
+
 set_render_options()

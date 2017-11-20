@@ -60,6 +60,8 @@ def generate_scene():
     
     island_plane = create_island(ISLAND_NAME)
     lots_of_trees(island_plane)
+    
+    get_me_mode('OBJECT')
 
 def lots_of_trees(island):
     more = True
@@ -297,11 +299,3 @@ def create_sun(sun_name):
 # Do stuff.
 if reset_old_stuff:
     delete_old_stuff()
-
-generate_scene()
-
-get_me_mode('OBJECT')
-
-# This is the stupidest thing I have ever seen. But apparently it's the easiest way to change the view to the camera.
-next(area for area in bpy.context.screen.areas if area.type == 'VIEW_3D').spaces[0].region_3d.view_perspective = 'CAMERA'
-bpy.ops.object.select_all(action='DESELECT')
