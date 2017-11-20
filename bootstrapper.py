@@ -1,5 +1,7 @@
 import bpy
 import sys
+import random
+from time import time
 
 """ Run script and set up Blender environment for command line rendering. """
 
@@ -9,6 +11,7 @@ directory = bpy.path.abspath("//")
 if not directory in sys.path:
     sys.path.append(directory)
 
+from config import *
 import cycles_island
 
 # RENDERING PARAMETERS
