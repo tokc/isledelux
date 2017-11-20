@@ -89,7 +89,7 @@ while True:
     number_of_tweets += 1
     average_tweet_time = int(total_tweet_time / number_of_tweets)
 
-    logger.info("Average tweet time: {} minutes.".format(average_tweet_time)
+    logger.info("Average tweet time: {} minutes.".format(average_tweet_time))
     
     # Wait for the sort of random amount of time
     time.sleep(sleepytime)

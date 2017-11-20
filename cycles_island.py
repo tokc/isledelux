@@ -7,13 +7,8 @@ from time import time
 import sys
 import os
 
-SCRIPT_DIRECTORY = "."
-
-directory = SCRIPT_DIRECTORY
-if not directory in sys.path:
-    sys.path.append(directory)
-import planemaker
 from config import *
+import planemaker
 
 
 # Parameter stuff.
