@@ -12,7 +12,7 @@ if not directory in sys.path:
     sys.path.append(directory)
 
 from config import *
-import cycles_island
+from generation import cycles_island
 
 cycles_island.generate_scene()
 

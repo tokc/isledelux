@@ -8,6 +8,6 @@ This program depends on Blender, the 3D modeling software, as well as the Python
 Fill in your API keys and path to Blender in the config.py text file, then run isledelux.py, and it will tweet out images.
 
 |-- Blender Scripts --|
-If you would like to play around with the Blender Python script in your own Blender scene, load up the cycles_island.py file and remove (or comment out) the bottom three lines before hitting "Run Script".
+If you would like to play around with the Blender Python script in your own Blender scene, load up the isledelux_GUI.py file and hit "Run Script". Be aware that the script empties out the scene before adding stuff, so don't run it in a scene full of important stuff.
 
 |-- You can find Isle de Lux @isledelux on Twitter. --|
