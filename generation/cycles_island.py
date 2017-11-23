@@ -9,6 +9,8 @@ import os
 
 from config import *
 from . import planemaker
+from . import treemaker
+from .utilities import get_me_mode, activate_object
 
 
 # Parameter stuff.
@@ -33,23 +35,6 @@ def select_only(thing):
     except:
         pass
 
-def activate_object(object):
-    # Deselect everything and select only the named object.
-    get_me_mode('OBJECT')
-    bpy.ops.object.select_all(action='DESELECT')
-    try:
-        bpy.context.scene.objects.active = object
-    except:
-        pass
-
-def get_me_mode(new_mode):
-    try:
-        bpy.ops.object.mode_set(mode=new_mode)
-
-    except:
-        pass
-
-
 # Linear stuff.
 
 def generate_scene():
@@ -71,7 +56,7 @@ def lots_of_trees(island):
     more = True
 
     while more:
-        generate_tree(island)
+        treemaker.generate_tree(island)
 
         if random.random() > 0.5:
             more = False
@@ -91,8 +76,8 @@ def generate_tree(island):
     activate_object(island)
     get_me_mode('EDIT')
     bm = bmesh.from_edit_mesh(bpy.context.active_object.data)
-    treetop_position, treetop_size = place_tree(bm)
-    make_tree_top(treetop_position, treetop_size)
+    treetop_position, treetop_size = treemaker.place_tree(bm)
+    treemaker.make_tree_top(treetop_position, treetop_size)
 
 def delete_old_stuff():
     get_me_mode('OBJECT')
@@ -213,7 +198,7 @@ def create_island(name):
     plane.data.materials.append(bpy.data.materials.get('Sand'))
 
     return plane
-
+"""
 def place_tree(bm):
     # Choose location.
     bm.verts.ensure_lookup_table()
@@ -291,7 +276,7 @@ def make_tree_top(position=(0.0, 0.0, 0.0), top_size=0.0):
     bpy.ops.mesh.vertices_smooth(factor=0.9)
     bpy.ops.obj
     bpy.context.active_object.data.materials.append(bpy.data.materials.get('Green'))
-
+"""
 def create_sun(sun_name):
     get_me_mode('OBJECT')
     bpy.ops.object.lamp_add(type='SUN', location=(3.0, 7.0, 2.0))

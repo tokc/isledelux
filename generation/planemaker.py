@@ -72,8 +72,8 @@ def generate_plane(name=None, iterate=False):
     
     object = bpy.context.active_object
     
-    if name:
-        object.name = name
+    """if name:
+        object.name = name"""
 
     bm = bmesh.new()
     bm.from_mesh(object.data)
