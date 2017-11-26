@@ -4,23 +4,14 @@ import bmesh
 import random
 import math
 
+from .utilities import get_me_mode
+
 NUM_VERTS = 30
 
 print("Hemlo.")
 
 def generate_plane(name=None, iterate=False):
-    try:
-        bpy.ops.object.mode_set(mode='OBJECT')
-    except:
-        pass
-        
-    if iterate:
-        try:
-            bpy.ops.object.select_all(action='DESELECT')
-            bpy.data.objects[name].select = True
-            bpy.ops.object.delete()
-        except:
-            pass
+    get_me_mode('OBJECT')
     
     # Build 2D array of vertices.
     two_dimensions = [[(a, b, 0) for a in range(NUM_VERTS)] for b in range(NUM_VERTS)]
@@ -71,9 +62,6 @@ def generate_plane(name=None, iterate=False):
     bpy.ops.mesh.delete()
     
     object = bpy.context.active_object
-    
-    """if name:
-        object.name = name"""
 
     bm = bmesh.new()
     bm.from_mesh(object.data)
@@ -86,10 +74,7 @@ def generate_plane(name=None, iterate=False):
     for face in faces:
         bm.faces.new([bm.verts[x] for x in face])
     
-    try:
-        bpy.ops.object.mode_set(mode='OBJECT')
-    except:
-        pass
+    get_me_mode('OBJECT')
     
     bm.to_mesh(object.data)
     bm.free()

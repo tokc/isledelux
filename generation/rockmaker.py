@@ -4,6 +4,7 @@ import bmesh
 
 from .utilities import get_me_mode, activate_object
 
+
 def choose_location(island):
     # Choose location.
     activate_object(island)
@@ -30,11 +31,18 @@ def choose_location(island):
 
     return world_coordinates
 
+
 def place_rock(island):
     get_me_mode('OBJECT')
     position = choose_location(island)
     get_me_mode('OBJECT')
-    bpy.ops.mesh.primitive_cube_add(location=position, radius=0.2 + (random.random() * 0.2), enter_editmode=True)
+
+    bpy.ops.mesh.primitive_cube_add(
+        location=position,
+        radius=0.2 + (random.random() * 0.2),
+        enter_editmode=True
+    )
+
     bpy.ops.mesh.subdivide(fractal=2.743 + random.random())
     bpy.ops.mesh.subdivide(fractal=9.743)
     bpy.ops.mesh.subdivide(fractal=6.743)
