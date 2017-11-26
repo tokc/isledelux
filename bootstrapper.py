@@ -8,11 +8,12 @@ from time import time
 # Folder where all the scripts live.
 # Change this if it's different from where your .blend lives.
 directory = bpy.path.abspath("//")
-if not directory in sys.path:
+if directory not in sys.path:
     sys.path.append(directory)
 
 from config import *
 from generation import cycles_island
+
 
 # RENDERING PARAMETERS
 def set_render_options():
@@ -36,6 +37,6 @@ def set_render_options():
     bpy.context.scene.render.filepath = '//cycles/' + str(time()) + ".png"
     bpy.context.scene.render.use_overwrite = False
 
-cycles_island.generate_scene()    
+cycles_island.generate_scene()
 
 set_render_options()
