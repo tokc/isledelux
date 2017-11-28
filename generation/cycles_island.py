@@ -216,6 +216,6 @@ def create_sun():
     get_me_mode('OBJECT')
     bpy.ops.object.lamp_add(type='SUN', location=(3.0, 7.0, 2.0))
     sun = bpy.context.active_object
-    sun.rotation_euler = (random.random() * 1.4, 0.0, random.random() * 6.3)
+    sun.rotation_euler = (random.random() * 1.4, 0.0, random.random() * 3)
 
     return sun
