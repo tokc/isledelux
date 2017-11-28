@@ -16,10 +16,10 @@ from generation import cycles_island
 
 
 # RENDERING PARAMETERS
-def set_render_options():
+def set_render_options(sun):
     sky = bpy.data.worlds['World'].node_tree.nodes['Sky Texture']
     # Make the sky point at the sun.
-    sky.sun_direction = bpy.data.objects['Sun34587873456'].rotation_euler
+    sky.sun_direction = sun.rotation_euler
 
     # Random amount of haziness.
     sky.turbidity = (random.random() * 9.0) + 1.0
@@ -37,6 +37,6 @@ def set_render_options():
     bpy.context.scene.render.filepath = '//cycles/' + str(time()) + ".png"
     bpy.context.scene.render.use_overwrite = False
 
-cycles_island.generate_scene()
+sun = cycles_island.generate_scene()
 
-set_render_options()
+set_render_options(sun)

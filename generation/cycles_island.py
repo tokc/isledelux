@@ -25,7 +25,7 @@ def generate_scene():
     if reset_old_stuff:
         delete_old_stuff()
 
-    create_sun()
+    sun = create_sun()
     create_sea()
 
     set_up_camera()
@@ -36,6 +36,8 @@ def generate_scene():
     rockmaker.place_rock(island_plane)
 
     get_me_mode('OBJECT')
+
+    return sun
 
 
 def lots_of_trees(island):
@@ -215,3 +217,5 @@ def create_sun():
     bpy.ops.object.lamp_add(type='SUN', location=(3.0, 7.0, 2.0))
     sun = bpy.context.active_object
     sun.rotation_euler = (random.random() * 1.4, 0.0, random.random() * 6.3)
+
+    return sun
