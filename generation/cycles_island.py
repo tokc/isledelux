@@ -153,7 +153,6 @@ def create_sea():
 
 
 def create_island():
-    print("boop")
     get_me_mode('OBJECT')
 
     plane = planemaker.generate_plane()

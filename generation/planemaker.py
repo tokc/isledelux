@@ -8,8 +8,6 @@ from .utilities import get_me_mode
 
 NUM_VERTS = 30
 
-print("Hemlo.")
-
 def generate_plane(name=None, iterate=False):
     get_me_mode('OBJECT')
     
@@ -22,13 +20,10 @@ def generate_plane(name=None, iterate=False):
     
     multiplier = 0.105
     
-    print(len(two_dimensions))
-    
     y = 0
     for row in two_dimensions:
         x = 0
         for vert in row:
-            #print(math.sin(multiplier * vert[0]))
             two_dimensions[y][x] = (
                 vert[0],
                 vert[1],
